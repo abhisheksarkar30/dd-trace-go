@@ -1,4 +1,4 @@
-# Go Distributed Tracing by Datadog with integrated logging by Logrus
+# Go Distributed Tracing by Datadog with integrated logging
 ## Flow-Diagram
 ```mermaid
 flowchart TB
