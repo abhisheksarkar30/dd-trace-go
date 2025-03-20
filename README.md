@@ -71,3 +71,7 @@ flowchart TB
     class Intake,Storage,Sampling,Aggregation,Analytics backend
     class Dashboard,ServiceMap,TraceSearch,FlameGraph viz
 ```
+
+## Credits
+This flow-diagram was generated with assistance from Claude, an AI assistant by Anthropic.
+Code generated on: March 20, 2025
