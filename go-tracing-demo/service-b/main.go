@@ -7,7 +7,9 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	httptrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/net/http"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
+	"gopkg.in/DataDog/dd-trace-go.v1/profiler"
 )
 
 func main() {
@@ -18,15 +20,22 @@ func main() {
 	)
 	defer tracer.Stop()
 
+	// Start DataDog profiler (optional)
+	profiler.Start(
+		profiler.WithService("service-b"),
+		profiler.WithEnv("local"),
+	)
+	defer profiler.Stop()
+
 	// Initialize logger
 	logger := logrus.New()
 	logger.SetFormatter(&logrus.JSONFormatter{})
 	logger.SetOutput(os.Stdout)
 
 	// HTTP handler
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Extract span from request context
-		span, _ := tracer.StartSpanFromContext(r.Context(), "service-b.handle-request")
+		span, _ := tracer.StartSpanFromContext(r.Context(), "resource-handler")
 		defer span.Finish()
 
 		// Log with trace ID
@@ -42,7 +51,10 @@ func main() {
 		w.Write([]byte("Response from Service B"))
 	})
 
+	// Wrap the handler with DataDog tracing
+	tracedHandler := httptrace.WrapHandler(handler, "service-b", "/")
+
 	// Start HTTP server with tracing
 	log.Println("Service B started at :8081")
-	http.ListenAndServe(":8081", nil)
+	http.ListenAndServe(":8081", tracedHandler)
 }

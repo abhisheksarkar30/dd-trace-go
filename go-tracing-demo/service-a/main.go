@@ -8,15 +8,23 @@ import (
 	"github.com/sirupsen/logrus"
 	httptrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/net/http"
 	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
+	"gopkg.in/DataDog/dd-trace-go.v1/profiler"
 )
 
 func main() {
 	// Start DataDog tracer
 	tracer.Start(
-		tracer.WithService("go-distributed-tracing-demo"),
+		tracer.WithService("service-a"),
 		tracer.WithEnv("local"),
 	)
 	defer tracer.Stop()
+
+	// Start DataDog profiler (optional)
+	profiler.Start(
+		profiler.WithService("service-a"),
+		profiler.WithEnv("local"),
+	)
+	defer profiler.Stop()
 
 	// Initialize logger
 	logger := logrus.New()
@@ -24,6 +32,7 @@ func main() {
 	logger.SetOutput(os.Stdout)
 
 	// Start Service A
+	//go startServiceA(logger)
 	startServiceA(logger)
 
 	// Start Service B
@@ -33,7 +42,7 @@ func main() {
 func startServiceA(logger *logrus.Logger) {
 	http.HandleFunc("/service-a", func(w http.ResponseWriter, r *http.Request) {
 		// Extract span from request context
-		span, ctx := tracer.StartSpanFromContext(r.Context(), "service-a.handle-request")
+		span, ctx := tracer.StartSpanFromContext(r.Context(), "handle-request")
 		defer span.Finish()
 
 		// Log with trace ID
