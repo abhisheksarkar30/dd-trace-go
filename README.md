@@ -1,3 +1,5 @@
+# Go Distributed Tracing with integrated logging by Datadog
+## Flow-Diagram
 ```mermaid
 flowchart TB
     subgraph "Application Services"
