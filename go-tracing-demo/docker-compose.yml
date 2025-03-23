@@ -1,0 +1,60 @@
+services:
+  service-a:
+    build:
+      context: ./service-a
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - DD_SERVICE=service-a
+      - DD_ENV=local
+      - DD_AGENT_HOST=dd-agent
+    labels:
+      com.datadoghq.ad.logs: '[{"source": "go", "service": "service-a"}]'
+    depends_on:
+      - service-b
+      - dd-agent
+    networks:
+      - app-network
+
+  service-b:
+    build:
+      context: ./service-b
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    environment:
+      - DD_SERVICE=service-b
+      - DD_ENV=local
+      - DD_AGENT_HOST=dd-agent
+    labels:
+      com.datadoghq.ad.logs: '[{"source": "go", "service": "service-b"}]'
+    depends_on:
+      - dd-agent
+    networks:
+      - app-network
+
+  dd-agent:
+    image: datadog/agent:latest
+    container_name: dd-agent
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /proc/:/host/proc/:ro
+      - /sys/fs/cgroup/:/host/sys/fs/cgroup:ro
+      - /opt/datadog-agent/run:/opt/datadog-agent/run:rw
+    ports:
+      - "8126:8126/tcp"  # APM
+    environment:
+      - DD_API_KEY=<YOUR_API_KEY>
+      - DD_SITE=us5.datadoghq.com
+      - DD_APM_ENABLED=true
+      - DD_LOGS_ENABLED=true
+      - DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL=true
+      - DD_SERVICE=dd-agent  # Explicitly set the service name
+      - DD_CONTAINER_EXCLUDE_LOGS="name:dd-agent"  # Exclude logs from the dd-agent container
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

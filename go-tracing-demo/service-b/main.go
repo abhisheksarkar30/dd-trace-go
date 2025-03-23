@@ -40,8 +40,8 @@ func main() {
 
 		// Log with trace ID
 		logger.WithFields(logrus.Fields{
-			"trace_id": span.Context().TraceID(),
-			"span_id":  span.Context().SpanID(),
+			"dd.trace_id": span.Context().TraceID(),
+			"dd.span_id":  span.Context().SpanID(),
 		}).Info("Handling request in Service B")
 
 		// Simulate some work

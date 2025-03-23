@@ -47,12 +47,12 @@ func startServiceA(logger *logrus.Logger) {
 
 		// Log with trace ID
 		logger.WithFields(logrus.Fields{
-			"trace_id": span.Context().TraceID(),
-			"span_id":  span.Context().SpanID(),
+			"dd.trace_id": span.Context().TraceID(),
+			"dd.span_id":  span.Context().SpanID(),
 		}).Info("Handling request in Service A")
 
 		// Call Service B
-		req, _ := http.NewRequest("GET", "http://localhost:8081/service-b", nil)
+		req, _ := http.NewRequest("GET", "http://host.docker.internal:8081/service-b", nil)
 		req = req.WithContext(ctx)
 		client := httptrace.WrapClient(http.DefaultClient)
 		tracer.Inject(span.Context(), tracer.HTTPHeadersCarrier(req.Header))
